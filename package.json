@@ -1,0 +1,22 @@
+{
+  "name": "pr-tracker-discord-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node -r tsconfig-paths/register index.ts",
+    "dev": "nodemon -r dotenv/config -r tsconfig-paths/register src/index.ts",
+    "deploy": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/deploy-commands.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/rest": "^0.5.0",
+    "discord.js": "^13.8.1"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.1",
+    "nodemon": "^2.0.19",
+    "ts-node": "^10.8.2",
+    "tsconfig-paths": "^4.0.0"
+  }
+}
