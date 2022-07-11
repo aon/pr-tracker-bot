@@ -1,7 +1,7 @@
 import { Collection } from "discord.js";
 import { Command } from "@/interfaces/command";
-import RegisterCommand from "@/commands/register";
-import RemoveCommand from "@/commands/remove";
+import RegisterCommand from "@/bot/commands/register";
+import RemoveCommand from "@/bot/commands/remove";
 
 export const CommandsList: Command[] = [RegisterCommand, RemoveCommand];
 
