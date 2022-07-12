@@ -16,6 +16,7 @@ model Guild {
   updatedAt DateTime  @updatedAt
   discordId BigInt    @unique @db.UnsignedBigInt
   channels  Channel[]
+  User      User[]
 
   @@index([discordId])
 }
@@ -67,4 +68,17 @@ model Pr {
   repoId    Int
 
   @@index([number])
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  guild       Guild    @relation(fields: [guildId], references: [id])
+  guildId     Int
+  discordUser String
+  githubUser  String
+
+  @@index([discordUser])
+  @@index([githubUser])
 }
