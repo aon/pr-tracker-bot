@@ -1,16 +1,17 @@
+import { buildSlashCommandSubCommandsOnly } from "@/utils/discord-slash-commands";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Command } from "@/interfaces/command";
 
-const RemoveCommand: Command = {
+const SUBCOMMAND_USER = "user";
+const SUBCOMMAND_REPO = "repo";
+
+const RemoveCommand = buildSlashCommandSubCommandsOnly({
   data: new SlashCommandBuilder()
     .setName("remove")
     .setDescription("Remove resource")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("user")
-        .setDescription(
-          "Remove a Discord user -> GitHub user relationship"
-        )
+        .setName(SUBCOMMAND_USER)
+        .setDescription("Remove a Discord user -> GitHub user relationship")
         .addStringOption((option) =>
           option
             .setName("username")
@@ -20,7 +21,7 @@ const RemoveCommand: Command = {
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("repo")
+        .setName(SUBCOMMAND_REPO)
         .setDescription("Remove a monitored GitHub repo")
         .addStringOption((option) =>
           option
@@ -29,20 +30,20 @@ const RemoveCommand: Command = {
             .setRequired(true)
         )
     ),
-  run: async (interaction) => {
-    const subcommand = interaction.options.getSubcommand();
-
-    switch (subcommand) {
-      case "user":
+  subcommands: {
+    [SUBCOMMAND_USER]: {
+      execute: async (interaction) => {
         const username = interaction.options.getString("username");
-        await interaction.reply(`Removing user: ${username}`);
-        break;
-      case "repo":
+        await interaction.reply(`Registering a new user: ${username}`);
+      },
+    },
+    [SUBCOMMAND_REPO]: {
+      execute: async (interaction) => {
         const path = interaction.options.getString("path");
-        await interaction.reply(`Removing repo with path: ${path}`);
-        break;
-    }
+        await interaction.reply(`Registering a new repo with path: ${path}`);
+      },
+    },
   },
-};
+});
 
 export default RemoveCommand;

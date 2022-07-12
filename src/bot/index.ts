@@ -1,5 +1,10 @@
 import { Client, Intents } from "discord.js";
 import Commands from "@/bot/commands";
+import {
+  Command,
+  CommandAction,
+  CommandSubcommandsOnly,
+} from "@/interfaces/command";
 
 const initializeBot = () => {
   const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
@@ -14,8 +19,21 @@ const initializeBot = () => {
     const command = Commands.get(interaction.commandName);
     if (!command) return;
 
+    const isCommand = command.isCommand;
+    let executable: CommandAction;
+
+    if (isCommand) {
+      executable = (command as Command).execute;
+    } else {
+      const subcommand = interaction.options.getSubcommand(false);
+      if (!subcommand) return;
+      if (!(command as CommandSubcommandsOnly).subcommands[subcommand]) return;
+      executable = (command as CommandSubcommandsOnly).subcommands[subcommand]
+        .execute;
+    }
+
     try {
-      await command.run(interaction);
+      await executable(interaction);
     } catch (error) {
       console.error(error);
       await interaction.reply({

@@ -1,13 +1,16 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Command } from "@/interfaces/command";
+import { buildSlashCommandSubCommandsOnly } from "@/utils/discord-slash-commands";
 
-const RegisterCommand: Command = {
+const SUBCOMMAND_USER = "user";
+const SUBCOMMAND_REPO = "repo";
+
+const RegisterCommand = buildSlashCommandSubCommandsOnly({
   data: new SlashCommandBuilder()
     .setName("register")
     .setDescription("Register new resource")
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("user")
+        .setName(SUBCOMMAND_USER)
         .setDescription(
           "Register a new Discord user -> GitHub user relationship"
         )
@@ -20,7 +23,7 @@ const RegisterCommand: Command = {
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("repo")
+        .setName(SUBCOMMAND_REPO)
         .setDescription("Register a GitHub repo to monitor")
         .addStringOption((option) =>
           option
@@ -29,20 +32,20 @@ const RegisterCommand: Command = {
             .setRequired(true)
         )
     ),
-  run: async (interaction) => {
-    const subcommand = interaction.options.getSubcommand();
-
-    switch (subcommand) {
-      case "user":
+  subcommands: {
+    [SUBCOMMAND_USER]: {
+      execute: async (interaction) => {
         const username = interaction.options.getString("username");
         await interaction.reply(`Registering a new user: ${username}`);
-        break;
-      case "repo":
+      },
+    },
+    [SUBCOMMAND_REPO]: {
+      execute: async (interaction) => {
         const path = interaction.options.getString("path");
         await interaction.reply(`Registering a new repo with path: ${path}`);
-        break;
-    }
+      },
+    },
   },
-};
+});
 
 export default RegisterCommand;

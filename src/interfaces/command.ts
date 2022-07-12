@@ -1,7 +1,25 @@
-import { SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder } from "@discordjs/builders";
+import {
+  SlashCommandBuilder,
+  SlashCommandSubcommandsOnlyBuilder,
+} from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 
+export type CommandAction = (interaction: CommandInteraction) => Promise<void>;
+
 export interface Command {
-  data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder;
-  run: (interaction: CommandInteraction) => Promise<void>;
+  data: SlashCommandBuilder;
+  execute: CommandAction;
 }
+
+export interface CommandSubcommandsOnly {
+  data: SlashCommandSubcommandsOnlyBuilder;
+  subcommands: {
+    [subcommand: string]: {
+      execute: CommandAction;
+    };
+  };
+}
+
+export type GenericCommand = (Command | CommandSubcommandsOnly) & {
+  isCommand: boolean;
+};
