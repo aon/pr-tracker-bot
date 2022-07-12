@@ -1,0 +1,70 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  shadowDatabaseUrl    = env("SHADOW_DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+model Guild {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  discordId BigInt    @unique @db.UnsignedBigInt
+  channels  Channel[]
+
+  @@index([discordId])
+}
+
+model Channel {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  discordId BigInt    @unique @db.UnsignedBigInt
+  guild     Guild     @relation(fields: [guildId], references: [id])
+  guildId   Int
+  repos     Repo[]
+  messages  Message[]
+
+  @@index([discordId])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  discordId BigInt   @unique @db.UnsignedBigInt
+  channel   Channel  @relation(fields: [channelId], references: [id])
+  channelId Int
+  pr        Pr       @relation(fields: [prId], references: [id])
+  prId      Int
+
+  @@index([discordId])
+}
+
+model Repo {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  name      String    @unique
+  channels  Channel[]
+  prs       Pr[]
+
+  @@index([name])
+}
+
+model Pr {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  number    Int       @unique
+  messages  Message[]
+  repo      Repo      @relation(fields: [repoId], references: [id])
+  repoId    Int
+
+  @@index([number])
+}
