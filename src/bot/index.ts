@@ -1,4 +1,4 @@
-import { Client, Intents } from "discord.js";
+import { Client, CommandInteraction, Intents } from "discord.js";
 import Commands from "@/bot/commands";
 import {
   Command,
@@ -15,6 +15,7 @@ const initializeBot = () => {
 
   client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
+    if (!interaction.guildId) return;
 
     const command = Commands.get(interaction.commandName);
     if (!command) return;
@@ -33,7 +34,7 @@ const initializeBot = () => {
     }
 
     try {
-      await executable(interaction);
+      await executable(interaction as CommandInteraction & { guildId: string });
     } catch (error) {
       console.error(error);
       await interaction.reply({

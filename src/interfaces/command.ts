@@ -4,7 +4,9 @@ import {
 } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 
-export type CommandAction = (interaction: CommandInteraction) => Promise<void>;
+export type CommandAction = (
+  interaction: CommandInteraction & { guildId: string }
+) => Promise<void>;
 
 export interface Command {
   data: SlashCommandBuilder;
