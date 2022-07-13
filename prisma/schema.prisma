@@ -81,4 +81,5 @@ model User {
 
   @@index([discordId])
   @@index([githubUser])
+  @@unique([discordId, githubUser, guildId])
 }
