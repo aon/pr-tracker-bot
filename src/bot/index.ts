@@ -34,6 +34,7 @@ const initializeBot = () => {
     }
 
     try {
+      await interaction.reply("*Processing...*");
       await executable(interaction as CommandInteraction & { guildId: string });
     } catch (error) {
       console.error(error);

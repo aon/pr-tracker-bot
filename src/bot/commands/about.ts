@@ -6,7 +6,7 @@ const AboutCommand = buildSlashCommand({
     .setName("about")
     .setDescription("About this bot"),
   execute: async (interaction) => {
-    await interaction.reply(
+    await interaction.editReply(
       "This bot was created to help teams track their PRs"
     );
   },

@@ -40,105 +40,102 @@ const Command = buildSlashCommandSubCommandsOnly({
   subcommands: {
     [SUBCOMMAND_ADD]: {
       execute: async (interaction) => {
-        const githubUser = interaction.options.getString("username", true);
+        const githubUser = interaction.options
+          .getString("username", true)
+          .trim();
+        const userDiscordId = BigInt(interaction.user.id);
+        const guildDiscordId = BigInt(interaction.guildId);
 
         const guild = await prisma.guild.findUnique({
-          where: { discordId: BigInt(interaction.guildId) },
+          where: { discordId: guildDiscordId },
           select: { id: true },
         });
         if (guild) {
           const user = await prisma.user.findUnique({
             where: {
               discordId_githubUser_guildId: {
-                discordId: BigInt(interaction.user.id),
-                githubUser: githubUser.trim(),
+                discordId: userDiscordId,
+                githubUser,
                 guildId: guild.id,
               },
             },
             select: { id: true },
           });
           if (user) {
-            return await interaction.reply(`❌ User already exists`);
+            await interaction.editReply(`❌ User already exists`);
+            return;
           }
         }
 
         await prisma.user.create({
           data: {
-            discordId: BigInt(interaction.user.id),
-            githubUser: githubUser.trim(),
+            discordId: userDiscordId,
+            githubUser,
             guild: {
               connectOrCreate: {
-                where: {
-                  discordId: BigInt(interaction.guildId),
-                },
-                create: {
-                  discordId: BigInt(interaction.guildId),
-                },
+                where: { discordId: guildDiscordId },
+                create: { discordId: guildDiscordId },
               },
             },
           },
         });
-        await interaction.reply(
+        await interaction.editReply(
           `✅ New user registered \`${githubUser}\` ↔ ${interaction.user}`
         );
       },
     },
     [SUBCOMMAND_LIST]: {
       execute: async (interaction) => {
+        const guildDiscordId = BigInt(interaction.guildId);
+
         const users = await prisma.user.findMany({
           where: {
             guild: {
-              discordId: BigInt(interaction.guildId),
+              discordId: guildDiscordId,
             },
           },
         });
         if (users.length === 0) {
-          return await interaction.reply(`No users found 😢`);
+          await interaction.editReply(`No users found 😢`);
+          return;
         }
         const printUsers = users
           .map(
             (user) => `    •  \`${user.githubUser}\` ↔ <@${user.discordId}> `
           )
           .join("\n");
-        await interaction.reply(`🔎 Users found:\n${printUsers}`);
+        await interaction.editReply(`🔎 Users found:\n${printUsers}`);
       },
     },
     [SUBCOMMAND_DELETE]: {
       execute: async (interaction) => {
-        const githubUser = interaction.options.getString("username", true);
-        const guild = await prisma.guild.findUnique({
-          where: { discordId: BigInt(interaction.guildId) },
-          select: { id: true },
-        });
-        if (!guild) {
-          return await interaction.reply(
-            `❌ Server doesn't have any registered users`
-          );
-        }
-        const user = await prisma.user.findUnique({
+        const githubUser = interaction.options
+          .getString("username", true)
+          .trim();
+        const userDiscordId = BigInt(interaction.user.id);
+        const guildDiscordId = BigInt(interaction.guildId);
+
+        const user = await prisma.user.findFirst({
           where: {
-            discordId_githubUser_guildId: {
-              discordId: BigInt(interaction.user.id),
-              githubUser: githubUser.trim(),
-              guildId: guild.id,
+            discordId: userDiscordId,
+            githubUser,
+            guild: {
+              discordId: guildDiscordId,
             },
           },
           select: { id: true },
         });
         if (!user) {
-          return await interaction.reply(`❌ No user found with that name`);
+          await interaction.editReply(`❌ No user found with that name`);
+          return;
         }
 
         await prisma.user.delete({
           where: {
-            discordId_githubUser_guildId: {
-              discordId: BigInt(interaction.user.id),
-              githubUser: githubUser.trim(),
-              guildId: guild.id,
-            },
+            id: user.id,
           },
         });
-        await interaction.reply(
+        await interaction.editReply(
           `✅ User deleted \`${githubUser}\` ↔ ${interaction.user}`
         );
       },
