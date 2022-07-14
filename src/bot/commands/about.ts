@@ -7,7 +7,9 @@ const AboutCommand = buildSlashCommand({
     .setDescription("About this bot"),
   execute: async (interaction) => {
     await interaction.editReply(
-      "This bot was created to help teams track their PRs"
+      `📖 This bot was made by [aon](https://github.com/aon)
+🐛 If you find any bugs please report it on the [repo](https://github.com/aon/pr-tracker-discord-bot)
+`
     );
   },
 });
