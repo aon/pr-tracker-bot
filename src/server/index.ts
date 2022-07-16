@@ -11,9 +11,16 @@ const initializeServer = () => {
 
   app.post("/webhook/pr", async (req, res) => {
     try {
-      await handleWebhook(req.body);
-      return res.status(StatusCodes.OK).end();
+      const result = await handleWebhook(req.body);
+      if (result === undefined) {
+        return res.status(StatusCodes.OK).send();
+      }
+      return res.status(StatusCodes.MULTI_STATUS).send({
+        message: "Failed to send messages to some channels",
+        channels: result.map((r) => r.channel.discordId),
+      });
     } catch (error) {
+      console.error(error);
       return res.status(StatusCodes.BAD_REQUEST).end();
     }
   });

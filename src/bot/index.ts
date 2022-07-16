@@ -6,9 +6,9 @@ import {
   CommandSubcommandsOnly,
 } from "@/interfaces/command";
 
-const initializeBot = () => {
-  const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
+const initializeBot = () => {
   client.on("ready", () => {
     console.log("Ready!");
   });
@@ -49,3 +49,4 @@ const initializeBot = () => {
 };
 
 export default initializeBot;
+export { client };
