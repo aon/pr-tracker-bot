@@ -62,12 +62,12 @@ model Pr {
   id        Int       @id @default(autoincrement())
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  number    Int       @unique
+  githubId  BigInt    @unique @db.UnsignedBigInt
   messages  Message[]
   repo      Repo      @relation(fields: [repoId], references: [id])
   repoId    Int
 
-  @@index([number])
+  @@index([githubId])
 }
 
 model User {
@@ -79,7 +79,7 @@ model User {
   guildId    Int
   githubUser String
 
+  @@unique([discordId, githubUser, guildId])
   @@index([discordId])
   @@index([githubUser])
-  @@unique([discordId, githubUser, guildId])
 }
