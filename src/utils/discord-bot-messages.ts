@@ -78,7 +78,7 @@ export const buildPrMessage = async (payload: PullRequestWebhook) => {
       },
       { name: "\u200B", value: "\u200B" },
       {
-        name: "🧹 Reviewers:",
+        name: "🧹 Reviewers",
         value:
           reviewersList.length === 0
             ? "*none*"
