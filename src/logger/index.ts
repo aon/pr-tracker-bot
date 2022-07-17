@@ -2,18 +2,12 @@ import pino from "pino";
 import pinoHttp from "pino-http";
 
 const baseLogger = pino();
-export const mainLogger = baseLogger.child({module: "main"})
+export const mainLogger = baseLogger.child({ module: "main" });
 export const serverLogger = baseLogger.child({ module: "server" });
 export const botLogger = baseLogger.child({ module: "bot" });
 
 export const httpLogger = pinoHttp({
   logger: serverLogger,
-  serializers: {
-    err: pino.stdSerializers.err,
-    req: pino.stdSerializers.req,
-    res: pino.stdSerializers.res,
-  },
-  wrapSerializers: true,
   customLogLevel: function (_req, res, err) {
     if (res.statusCode >= 400 && res.statusCode < 500) {
       return "warn";
