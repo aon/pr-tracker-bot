@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { buildSlashCommandSubCommandsOnly } from "@/utils/discord-slash-commands";
 import prisma from "@/db/client";
+import { mention } from "@/utils/discord-bot-messages";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -101,7 +102,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         }
         const printUsers = users
           .map(
-            (user) => `    •  \`${user.githubUser}\` ↔ <@${user.discordId}> `
+            (user) => `    •  \`${user.githubUser}\` ↔ ${mention(user.discordId)} `
           )
           .join("\n");
         await interaction.editReply(`🔎 Users found:\n${printUsers}`);

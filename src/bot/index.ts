@@ -5,41 +5,63 @@ import {
   CommandAction,
   CommandSubcommandsOnly,
 } from "@/interfaces/command";
+import { botLogger as logger } from "@/logger";
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
 const initializeBot = () => {
   client.on("ready", () => {
-    console.log("Ready!");
+    logger.info("ready");
   });
 
   client.on("interactionCreate", async (interaction) => {
-    if (!interaction.isCommand()) return;
-    if (!interaction.guildId) return;
+    logger.info({ interaction }, "interaction received");
+    if (!interaction.isCommand()) {
+      logger.warn("interaction is not a command");
+      return;
+    }
+    if (!interaction.guildId) {
+      logger.warn("interaction is not in a guild");
+      return;
+    }
 
     const command = Commands.get(interaction.commandName);
-    if (!command) return;
+    if (!command) {
+      logger.error("command not found");
+      return;
+    }
 
     const isCommand = command.isCommand;
+    const subcommandName = interaction.options.getSubcommand(false);
     let executable: CommandAction;
 
     if (isCommand) {
       executable = (command as Command).execute;
     } else {
-      const subcommand = interaction.options.getSubcommand(false);
-      if (!subcommand) return;
-      if (!(command as CommandSubcommandsOnly).subcommands[subcommand]) return;
-      executable = (command as CommandSubcommandsOnly).subcommands[subcommand]
-        .execute;
+      if (!subcommandName) {
+        logger.error("subcommand not found");
+        return;
+      }
+      if (!(command as CommandSubcommandsOnly).subcommands[subcommandName])
+        return;
+      executable = (command as CommandSubcommandsOnly).subcommands[
+        subcommandName
+      ].execute;
     }
 
     try {
+      logger.info(
+        `executing command '/${interaction.commandName}` +
+          (subcommandName ? ` ${subcommandName}'` : "'")
+      );
       await interaction.reply("*Processing...*");
       await executable(interaction as CommandInteraction & { guildId: string });
+      logger.info("command executed successfully");
     } catch (error) {
-      console.error(error);
+      logger.info("error executing command");
+      logger.error(error);
       await interaction.reply({
-        content: "There was an error while executing this command!",
+        content: "There was an error while executing this command 😥",
         ephemeral: true,
       });
     }

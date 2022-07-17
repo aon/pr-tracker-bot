@@ -1,13 +1,13 @@
-interface User {
+export interface User {
   login: string;
-  id: number;
+  id: bigint;
 }
 
 export interface PullRequestWebhook {
   action: string;
   number: number;
   pull_request: {
-    id: number;
+    id: bigint;
     html_url: string;
     diff_url: string;
     state: "open" | "closed";
@@ -22,7 +22,7 @@ export interface PullRequestWebhook {
     requested_reviewers: User[];
   };
   repository: {
-    id: number;
+    id: bigint;
     name: string;
     full_name: string;
     html_url: string;

@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register index.ts",
-    "dev": "nodemon -r dotenv/config -r tsconfig-paths/register src/index.ts",
+    "dev": "nodemon -r dotenv/config -r tsconfig-paths/register src/index.ts | pino-pretty -t SYS:standard -o '{module} - {msg}' -i module",
     "deploy": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/deploy-commands.ts"
   },
   "author": "",
@@ -14,12 +14,15 @@
     "@prisma/client": "^4.0.0",
     "discord.js": "^13.8.1",
     "express": "^4.18.1",
-    "http-status-codes": "^2.2.0"
+    "http-status-codes": "^2.2.0",
+    "pino": "^8.1.0",
+    "pino-http": "^8.1.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
     "dotenv": "^16.0.1",
     "nodemon": "^2.0.19",
+    "pino-pretty": "^8.1.0",
     "prisma": "^4.0.0",
     "ts-node": "^10.8.2",
     "tsconfig-paths": "^4.0.0"
