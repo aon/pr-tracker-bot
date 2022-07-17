@@ -1,7 +1,9 @@
 import { client } from "@/bot";
 import prisma from "@/db/client";
-import { PullRequestWebhook, User } from "@/interfaces/gh-webhooks";
+import { User } from "@/interfaces/gh-base";
+import { PullRequestWebhook } from "@/interfaces/gh-webhooks";
 import { MessageEmbed, TextChannel } from "discord.js";
+import { GREY, LIGHT_BLUE } from "./constants";
 
 export const sendMessage = async ({
   channelDiscordId,
@@ -59,14 +61,21 @@ export const buildPrMessage = async (payload: PullRequestWebhook) => {
   const reviewersList = getUserList(requested_reviewers, usernameToDiscordId);
 
   const embed = new MessageEmbed()
-    .setColor("#0099ff")
+    .setColor(
+      payload.pull_request.merged || payload.pull_request.state === "closed"
+        ? GREY
+        : LIGHT_BLUE
+    )
     .setTitle(`${full_name} - ${title} - #${number}`)
     .setURL(payload.pull_request.html_url)
-    // .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
+    .setAuthor({
+      name: payload.sender.login,
+      iconURL: payload.sender.avatar_url,
+      url: payload.sender.html_url,
+    })
     .setDescription(body || "*no description*")
-    // .setThumbnail("https://i.imgur.com/AfFp7pu.png")
     .addFields(
-      { name: "\u200B", value: "\u200B" },
+      { name: "\u200B", value: "\u200B", inline: true },
       {
         name: "🔧 Assignees",
         value:
@@ -78,37 +87,22 @@ export const buildPrMessage = async (payload: PullRequestWebhook) => {
       },
       { name: "\u200B", value: "\u200B" },
       {
-        name: "🧹 Reviewers",
+        name: "🧹 Pending reviewers",
         value:
           reviewersList.length === 0
             ? "*none*"
-            : `🧹 Reviewers:\n${reviewersList
+            : `${reviewersList
                 .map((assignee) => `    - ${assignee}`)
                 .join("\n")}`,
       },
       { name: "\u200B", value: "\u200B" }
     )
-    // .addField("Inline field title", "Some value here", true)
-    // .setImage('https://i.imgur.com/AfFp7pu.png')
-    .setTimestamp();
-  // .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
-
-  // let message = `🌿 **${full_name}** - *${title}* - #${payload.pull_request.number}\n${body}\n\n`;
-  // if (assigneesList.length > 0) {
-  //   message += `🔧 Assignees:\n${assigneesList
-  //     .map((assignee) => `    - ${assignee}`)
-  //     .join("\n")}`;
-  // } else {
-  //   message += `🔧 Assignees: *none*`;
-  // }
-  // message += "\n\n";
-  // if (reviewersList.length > 0) {
-  //   message += `🧹 Reviewers:\n${reviewersList
-  //     .map((assignee) => `    - ${assignee}`)
-  //     .join("\n")}`;
-  // } else {
-  //   message += `🧹 Reviewers: *none*`;
-  // }
+    .setTimestamp()
+    .setFooter({
+      text: payload.pull_request.merged
+        ? `merged by ${payload.pull_request.merged_by.login}`
+        : payload.pull_request.state,
+    });
   return { embeds: [embed] };
 };
 

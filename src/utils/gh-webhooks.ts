@@ -105,7 +105,7 @@ export const handleWebhook = async (payload: PullRequestWebhook) => {
           ...message,
         });
       } catch (e) {
-        logger.info("error editing message")
+        logger.info("error editing message");
         logger.error(e);
         return {
           channel,
@@ -128,7 +128,7 @@ export const handleWebhook = async (payload: PullRequestWebhook) => {
           },
         });
       } catch (e) {
-        logger.info("error sending message")
+        logger.info("error sending message");
         logger.error(e);
         return {
           channel,
@@ -164,7 +164,7 @@ export const handleWebhook = async (payload: PullRequestWebhook) => {
           },
         });
       } catch (e) {
-        logger.info("error sending message")
+        logger.info("error sending message");
         logger.error(e);
         return {
           channel: result.channel,
