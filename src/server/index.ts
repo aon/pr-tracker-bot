@@ -27,7 +27,7 @@ const initializeServer = () => {
       });
     } catch (error) {
       logger.info("failed to handle webhook");
-      logger.error(error);
+      logger.warn(error);
       return res.status(StatusCodes.BAD_REQUEST).end();
     }
   });

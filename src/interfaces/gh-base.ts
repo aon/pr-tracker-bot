@@ -35,5 +35,3 @@ export interface Review {
   user: User;
   state: "APPROVED" | "CHANGES_REQUESTED" | "COMMENTED" | "DISMISSED" | "PENDING";
 }
-
-export interface Organization {}

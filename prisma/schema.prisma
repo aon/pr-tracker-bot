@@ -22,14 +22,15 @@ model Guild {
 }
 
 model Channel {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  discordId BigInt    @unique @db.UnsignedBigInt
-  guild     Guild     @relation(fields: [guildId], references: [id])
-  guildId   Int
-  repos     Repo[]
-  messages  Message[]
+  id            Int            @id @default(autoincrement())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  discordId     BigInt         @unique @db.UnsignedBigInt
+  guild         Guild          @relation(fields: [guildId], references: [id])
+  guildId       Int
+  organizations Organization[]
+  repos         Repo[]
+  messages      Message[]
 
   @@index([discordId])
 }
@@ -47,13 +48,26 @@ model Message {
   @@index([discordId])
 }
 
-model Repo {
+model Organization {
   id        Int       @id @default(autoincrement())
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   name      String    @unique
+  repos     Repo[]
   channels  Channel[]
-  prs       Pr[]
+
+  @@index([name])
+}
+
+model Repo {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  name           String        @unique
+  channels       Channel[]
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId Int?
+  prs            Pr[]
 
   @@index([name])
 }

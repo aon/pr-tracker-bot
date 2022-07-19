@@ -2,6 +2,8 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { buildSlashCommandSubCommandsOnly } from "@/utils/discord-slash-commands";
 import prisma from "@/db/client";
 import { mention } from "@/utils/discord-bot-messages";
+import { ghRepoUserOrganizationSchema } from "./schemas";
+import { VALIDATION_FAILED } from "@/utils/constants";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -41,9 +43,15 @@ const Command = buildSlashCommandSubCommandsOnly({
   subcommands: {
     [SUBCOMMAND_ADD]: {
       execute: async (interaction) => {
-        const githubUser = interaction.options
-          .getString("username", true)
-          .trim();
+        let githubUser: string;
+        try {
+          githubUser = await ghRepoUserOrganizationSchema.validateAsync(
+            interaction.options.getString("username", true)
+          );
+        } catch (error) {
+          interaction.editReply(VALIDATION_FAILED);
+          return;
+        }
         const userDiscordId = BigInt(interaction.user.id);
         const guildDiscordId = BigInt(interaction.guildId);
 
@@ -102,7 +110,8 @@ const Command = buildSlashCommandSubCommandsOnly({
         }
         const printUsers = users
           .map(
-            (user) => `    •  \`${user.githubUser}\` ↔ ${mention(user.discordId)} `
+            (user) =>
+              `    •  \`${user.githubUser}\` ↔ ${mention(user.discordId)} `
           )
           .join("\n");
         await interaction.editReply(`🔎 Users found:\n${printUsers}`);
@@ -110,9 +119,15 @@ const Command = buildSlashCommandSubCommandsOnly({
     },
     [SUBCOMMAND_DELETE]: {
       execute: async (interaction) => {
-        const githubUser = interaction.options
-          .getString("username", true)
-          .trim();
+        let githubUser: string;
+        try {
+          githubUser = await ghRepoUserOrganizationSchema.validateAsync(
+            interaction.options.getString("username", true)
+          );
+        } catch (error) {
+          interaction.editReply(VALIDATION_FAILED);
+          return;
+        }
         const userDiscordId = BigInt(interaction.user.id);
         const guildDiscordId = BigInt(interaction.guildId);
 

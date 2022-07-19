@@ -10,64 +10,67 @@ const SUBCOMMAND_DELETE = "delete";
 
 const Command = buildSlashCommandSubCommandsOnly({
   data: new SlashCommandBuilder()
-    .setName("repo")
-    .setDescription("Handle subscribed repos")
+    .setName("organization")
+    .setDescription("Handle subscribed organizations")
     .addSubcommand((subcommand) =>
       subcommand
         .setName(SUBCOMMAND_ADD)
-        .setDescription("Add a new repo to subscribe to on this channel")
+        .setDescription(
+          "Add a new organization to subscribe to on this channel"
+        )
         .addStringOption((option) =>
           option
             .setName("name")
-            .setDescription("Complete repo name as in `<user>/<repo>`")
+            .setDescription("Organization name")
             .setRequired(true)
         )
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName(SUBCOMMAND_LIST)
-        .setDescription("List subscribed repos on this channel")
+        .setDescription("List subscribed organizations on this channel")
     )
     .addSubcommand((subcommand) =>
       subcommand
         .setName(SUBCOMMAND_DELETE)
-        .setDescription("Delete repo subscription from this channel")
+        .setDescription("Delete organization subscription from this channel")
         .addStringOption((option) =>
           option
             .setName("name")
-            .setDescription("Complete repo name as in `<user>/<repo>`")
+            .setDescription("Organization name")
             .setRequired(true)
         )
     ),
   subcommands: {
     [SUBCOMMAND_ADD]: {
       execute: async (interaction) => {
-        let repoName: string;
+        let organizationName: string;
         try {
-          repoName = await ghRepoUserOrganizationSchema.validateAsync(
+          organizationName = await ghRepoUserOrganizationSchema.validateAsync(
             interaction.options.getString("name", true)
           );
         } catch (error) {
           interaction.editReply(VALIDATION_FAILED);
           return;
         }
+
         const channelDiscordId = BigInt(interaction.channelId);
         const guildDiscordId = BigInt(interaction.guildId);
 
-        const repo = await prisma.repo.findFirst({
+        const organization = await prisma.organization.findFirst({
           where: {
-            name: repoName,
+            name: organizationName,
             channels: { some: { discordId: channelDiscordId } },
           },
           select: { id: true },
         });
-        if (repo) {
-          await interaction.editReply(`❌ Repo already exists`);
+        if (organization) {
+          await interaction.editReply(`❌ Organization already exists`);
           return;
         }
 
-        await prisma.repo.upsert({
-          where: { name: repoName },
+        await prisma.organization.upsert({
+          where: { name: organizationName },
           update: {
             channels: {
               connectOrCreate: [
@@ -87,7 +90,7 @@ const Command = buildSlashCommandSubCommandsOnly({
             },
           },
           create: {
-            name: repoName,
+            name: organizationName,
             channels: {
               connectOrCreate: [
                 {
@@ -106,7 +109,9 @@ const Command = buildSlashCommandSubCommandsOnly({
             },
           },
         });
-        await interaction.editReply(`✅ New repo registered \`${repoName}\``);
+        await interaction.editReply(
+          `✅ New organization registered \`${organizationName}\``
+        );
       },
     },
     [SUBCOMMAND_LIST]: {
@@ -115,23 +120,23 @@ const Command = buildSlashCommandSubCommandsOnly({
 
         const channel = await prisma.channel.findUnique({
           where: { discordId: channelDiscordId },
-          select: { repos: { select: { name: true } } },
+          select: { organizations: { select: { name: true } } },
         });
-        if (!channel || channel?.repos.length === 0) {
-          await interaction.editReply(`No repos found 😢`);
+        if (!channel || channel?.organizations.length === 0) {
+          await interaction.editReply(`No organizations found 😢`);
           return;
         }
-        const printUsers = channel.repos
-          .map((repo) => `    •  ${repo.name}`)
+        const printUsers = channel.organizations
+          .map((organization) => `    •  ${organization.name}`)
           .join("\n");
-        await interaction.editReply(`🔎 Repos found:\n${printUsers}`);
+        await interaction.editReply(`🔎 Organizations found:\n${printUsers}`);
       },
     },
     [SUBCOMMAND_DELETE]: {
       execute: async (interaction) => {
-        let repoName: string;
+        let organizationName: string;
         try {
-          repoName = await ghRepoUserOrganizationSchema.validateAsync(
+          organizationName = await ghRepoUserOrganizationSchema.validateAsync(
             interaction.options.getString("name", true)
           );
         } catch (error) {
@@ -140,20 +145,20 @@ const Command = buildSlashCommandSubCommandsOnly({
         }
         const channelDiscordId = BigInt(interaction.channelId);
 
-        const repo = await prisma.repo.findFirst({
+        const organization = await prisma.organization.findFirst({
           where: {
-            name: repoName,
+            name: organizationName,
             channels: { some: { discordId: channelDiscordId } },
           },
           select: { id: true, channels: { select: { id: true } } },
         });
-        if (!repo) {
-          await interaction.editReply(`❌ Repo not found`);
+        if (!organization) {
+          await interaction.editReply(`❌ Organization not found`);
           return;
         }
 
-        await prisma.repo.update({
-          where: { id: repo.id },
+        await prisma.organization.update({
+          where: { id: organization.id },
           data: {
             channels: {
               disconnect: { discordId: channelDiscordId },
@@ -161,7 +166,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
         await interaction.editReply(
-          `✅ Repo deleted \`${repoName}\` from this channel`
+          `✅ Organization deleted \`${organizationName}\` from this channel`
         );
       },
     },

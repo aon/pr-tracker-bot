@@ -25,21 +25,42 @@ export const handleWebhook = async (payload: PullRequestWebhook) => {
 
   // Check if webhook is pull_request
   if (payload.pull_request === undefined) {
-    logger.warn("webhook is not a pull request");
     throw new Error("webhook is not a pull request");
   }
 
-  // Check if repo exists or has subscribers
-  const repo = await prisma.repo.findUnique({
-    where: {
-      name: payload.repository.full_name,
-    },
-    select: {
-      id: true,
-    },
-  });
+  // Check if organization exists
+  let organization = null;
+  let repo = null;
+  if (payload.organization !== undefined) {
+    organization = await prisma.organization.findUnique({
+      where: { name: payload.organization.login },
+      select: { id: true },
+    });
+  }
+
+  // Connect to repository
+  if (organization) {
+    repo = await prisma.repo.upsert({
+      where: { name: payload.repository.full_name },
+      update: {},
+      create: {
+        name: payload.repository.full_name,
+        organization: { connect: { id: organization.id } },
+      },
+      select: { id: true },
+    });
+  }
+
+  // Check if repo exists if wasn´t from organization
   if (!repo) {
-    logger.warn("repo was not found");
+    repo = await prisma.repo.findUnique({
+      where: { name: payload.repository.full_name },
+      select: { id: true },
+    });
+  }
+
+  // If still no repo throw error
+  if (!repo) {
     throw new Error("repo was not found");
   }
 
@@ -56,13 +77,13 @@ export const handleWebhook = async (payload: PullRequestWebhook) => {
   });
 
   // Get subscribed channels
+  const repoQuery = { repos: { some: { id: repo.id } } };
+  const organizationQuery = {
+    organizations: { some: { id: organization?.id } },
+  };
   const channels = await prisma.channel.findMany({
     where: {
-      repos: {
-        some: {
-          id: repo.id,
-        },
-      },
+      OR: organization ? [repoQuery, organizationQuery] : [repoQuery],
     },
     select: {
       id: true,
@@ -74,7 +95,6 @@ export const handleWebhook = async (payload: PullRequestWebhook) => {
     },
   });
   if (channels.length === 0) {
-    logger.warn("repo has no subscribers");
     throw new Error("repo has no subscribers");
   }
 
@@ -165,7 +185,7 @@ export const handleWebhook = async (payload: PullRequestWebhook) => {
         });
       } catch (e) {
         logger.info("error sending message");
-        logger.error(e);
+        logger.warn(e);
         return {
           channel: result.channel,
           type: "SEND",

@@ -2,12 +2,14 @@ import { Collection } from "discord.js";
 import { GenericCommand } from "@/interfaces/command";
 import AboutCommand from "@/bot/commands/about";
 import HelpCommand from "@/bot/commands/help";
+import OrganizationCommand from "@/bot/commands/organization";
 import RepoCommand from "@/bot/commands/repo";
 import UserCommand from "@/bot/commands/user";
 
 export const CommandsList: GenericCommand[] = [
   AboutCommand,
   HelpCommand,
+  OrganizationCommand,
   RepoCommand,
   UserCommand,
 ];
