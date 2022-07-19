@@ -118,7 +118,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { repos: { select: { name: true } } },
         });
         if (!channel || channel?.repos.length === 0) {
-          await interaction.editReply(`No repos found 😢`);
+          await interaction.editReply(`😢 No repos found`);
           return;
         }
         const printUsers = channel.repos

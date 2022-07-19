@@ -123,7 +123,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { organizations: { select: { name: true } } },
         });
         if (!channel || channel?.organizations.length === 0) {
-          await interaction.editReply(`No organizations found 😢`);
+          await interaction.editReply(`😢 No organizations found`);
           return;
         }
         const printUsers = channel.organizations

@@ -105,7 +105,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
         if (users.length === 0) {
-          await interaction.editReply(`No users found 😢`);
+          await interaction.editReply(`😢 No users found`);
           return;
         }
         const printUsers = users
