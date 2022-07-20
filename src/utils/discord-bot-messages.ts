@@ -3,7 +3,7 @@ import prisma from "@/db/client";
 import { User } from "@/interfaces/gh-base";
 import { PullRequestWebhook } from "@/interfaces/gh-webhooks";
 import { MessageEmbed, TextChannel } from "discord.js";
-import { GREY, LIGHT_BLUE } from "./constants";
+import { getEmbedColor } from "./embed-colors";
 
 export const sendMessage = async ({
   channelDiscordId,
@@ -62,9 +62,9 @@ export const buildPrMessage = async (payload: PullRequestWebhook) => {
 
   const embed = new MessageEmbed()
     .setColor(
-      payload.pull_request.merged || payload.pull_request.state === "closed"
-        ? GREY
-        : LIGHT_BLUE
+      getEmbedColor(
+        payload.pull_request.merged ? "merged" : payload.pull_request.state
+      )
     )
     .setTitle(`${full_name} - ${title} - #${number}`)
     .setURL(payload.pull_request.html_url)
