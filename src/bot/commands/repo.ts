@@ -66,49 +66,32 @@ const Command = buildSlashCommandSubCommandsOnly({
           return;
         }
 
-        await prisma.repo.upsert({
-          where: { name: repoName },
-          update: {
-            channels: {
-              connectOrCreate: [
-                {
-                  where: { discordId: channelDiscordId },
-                  create: {
-                    discordId: channelDiscordId,
-                    guild: {
-                      connectOrCreate: {
-                        where: { discordId: guildDiscordId },
-                        create: { discordId: guildDiscordId },
-                      },
-                    },
-                  },
+        const channels = [
+          {
+            where: { discordId: channelDiscordId },
+            create: {
+              discordId: channelDiscordId,
+              guild: {
+                connectOrCreate: {
+                  where: { discordId: guildDiscordId },
+                  create: { discordId: guildDiscordId },
                 },
-              ],
+              },
             },
           },
+        ];
+        await prisma.repo.upsert({
+          where: { name: repoName },
+          update: { channels: { connectOrCreate: channels } },
           create: {
             name: repoName,
-            channels: {
-              connectOrCreate: [
-                {
-                  where: { discordId: channelDiscordId },
-                  create: {
-                    discordId: channelDiscordId,
-                    guild: {
-                      connectOrCreate: {
-                        where: { discordId: guildDiscordId },
-                        create: { discordId: guildDiscordId },
-                      },
-                    },
-                  },
-                },
-              ],
-            },
+            channels: { connectOrCreate: channels },
           },
         });
         await interaction.editReply(`✅ New repo registered \`${repoName}\``);
       },
     },
+
     [SUBCOMMAND_LIST]: {
       execute: async (interaction) => {
         const channelDiscordId = BigInt(interaction.channelId);
@@ -127,6 +110,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         await interaction.editReply(`🔎 Repos found:\n${printUsers}`);
       },
     },
+    
     [SUBCOMMAND_DELETE]: {
       execute: async (interaction) => {
         let repoName: string;

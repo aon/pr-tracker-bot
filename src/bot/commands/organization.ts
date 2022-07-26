@@ -69,44 +69,26 @@ const Command = buildSlashCommandSubCommandsOnly({
           return;
         }
 
-        await prisma.organization.upsert({
-          where: { name: organizationName },
-          update: {
-            channels: {
-              connectOrCreate: [
-                {
-                  where: { discordId: channelDiscordId },
-                  create: {
-                    discordId: channelDiscordId,
-                    guild: {
-                      connectOrCreate: {
-                        where: { discordId: guildDiscordId },
-                        create: { discordId: guildDiscordId },
-                      },
-                    },
-                  },
+        const channels = [
+          {
+            where: { discordId: channelDiscordId },
+            create: {
+              discordId: channelDiscordId,
+              guild: {
+                connectOrCreate: {
+                  where: { discordId: guildDiscordId },
+                  create: { discordId: guildDiscordId },
                 },
-              ],
+              },
             },
           },
+        ];
+        await prisma.organization.upsert({
+          where: { name: organizationName },
+          update: { channels: { connectOrCreate: channels } },
           create: {
             name: organizationName,
-            channels: {
-              connectOrCreate: [
-                {
-                  where: { discordId: channelDiscordId },
-                  create: {
-                    discordId: channelDiscordId,
-                    guild: {
-                      connectOrCreate: {
-                        where: { discordId: guildDiscordId },
-                        create: { discordId: guildDiscordId },
-                      },
-                    },
-                  },
-                },
-              ],
-            },
+            channels: { connectOrCreate: channels },
           },
         });
         await interaction.editReply(
@@ -114,6 +96,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         );
       },
     },
+
     [SUBCOMMAND_LIST]: {
       execute: async (interaction) => {
         const channelDiscordId = BigInt(interaction.channelId);
@@ -132,6 +115,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         await interaction.editReply(`🔎 Organizations found:\n${printUsers}`);
       },
     },
+    
     [SUBCOMMAND_DELETE]: {
       execute: async (interaction) => {
         let organizationName: string;

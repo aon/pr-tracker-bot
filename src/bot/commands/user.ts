@@ -93,6 +93,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         );
       },
     },
+    
     [SUBCOMMAND_LIST]: {
       execute: async (interaction) => {
         const guildDiscordId = BigInt(interaction.guildId);
@@ -117,6 +118,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         await interaction.editReply(`🔎 Users found:\n${printUsers}`);
       },
     },
+
     [SUBCOMMAND_DELETE]: {
       execute: async (interaction) => {
         let githubUser: string;
