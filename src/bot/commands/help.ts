@@ -1,4 +1,4 @@
-import { buildSlashCommand } from "@/utils/discord-slash-commands";
+import { buildSlashCommand } from "@/utils/bot-slash-commands";
 import { SlashCommandBuilder } from "@discordjs/builders";
 
 const HelpCommand = buildSlashCommand({

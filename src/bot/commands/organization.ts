@@ -1,8 +1,9 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { buildSlashCommandSubCommandsOnly } from "@/utils/discord-slash-commands";
+import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
 import prisma from "@/db/client";
 import { ghRepoUserOrganizationSchema } from "./schemas";
-import { VALIDATION_FAILED } from "@/utils/constants";
+import { VALIDATION_FAILED } from "@/utils/bot-responses";
+import { RESOURCE_ALREADY_EXISTS } from "@/utils/bot-responses";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -65,7 +66,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { id: true },
         });
         if (organization) {
-          await interaction.editReply(`❌ Organization already exists`);
+          await interaction.editReply(RESOURCE_ALREADY_EXISTS("organization"));
           return;
         }
 

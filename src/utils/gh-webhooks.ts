@@ -5,7 +5,7 @@ import {
   buildPrMessage,
   editMessage,
   sendMessage,
-} from "./discord-bot-messages";
+} from "./bot-messages";
 
 export const handleWebhook = async (payload: PullRequestWebhook) => {
   logger.info(

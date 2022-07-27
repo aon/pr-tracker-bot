@@ -1,9 +1,9 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { buildSlashCommandSubCommandsOnly } from "@/utils/discord-slash-commands";
+import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
 import prisma from "@/db/client";
-import { mention } from "@/utils/discord-bot-messages";
+import { mention } from "@/utils/bot-messages";
 import { ghRepoUserOrganizationSchema } from "./schemas";
-import { VALIDATION_FAILED } from "@/utils/constants";
+import { VALIDATION_FAILED } from "@/utils/bot-responses";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -93,7 +93,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         );
       },
     },
-    
+
     [SUBCOMMAND_LIST]: {
       execute: async (interaction) => {
         const guildDiscordId = BigInt(interaction.guildId);
