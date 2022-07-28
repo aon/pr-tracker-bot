@@ -60,9 +60,14 @@ const initializeBot = () => {
     } catch (error) {
       logger.info("error executing command");
       logger.error(error);
-      await interaction.editReply({
-        content: "There was an error while executing this command 😥",
-      });
+      try {
+        await interaction.editReply({
+          content: "There was an error while executing this command 😥",
+        });
+      } catch (error) {
+        logger.info("error while sending error message");
+        logger.error(error);
+      }
     }
   });
 
