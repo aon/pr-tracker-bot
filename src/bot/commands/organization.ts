@@ -55,7 +55,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         const channelDiscordId = BigInt(interaction.channelId);
 
         // Validate channel exists
-        const channel = isChannelExists(channelDiscordId);
+        const channel = await isChannelExists(channelDiscordId);
         if (!channel) {
           interaction.editReply(CHANNEL_NOT_REGISTERED);
           return;
@@ -134,7 +134,7 @@ const Command = buildSlashCommandSubCommandsOnly({
       execute: async (interaction) => {
         const channelDiscordId = BigInt(interaction.channelId);
 
-        const channel = isChannelExists(channelDiscordId);
+        const channel = await isChannelExists(channelDiscordId);
         if (!channel) {
           interaction.editReply(CHANNEL_NOT_REGISTERED);
           return;
