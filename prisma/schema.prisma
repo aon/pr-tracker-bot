@@ -31,6 +31,7 @@ model Channel {
   organizations Organization[]
   repos         Repo[]
   messages      Message[]
+  token         String
 
   @@index([discordId])
 }
