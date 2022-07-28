@@ -12,9 +12,10 @@ const HelpCommand = buildSlashCommand({
 In order to make it work, you need to:
   - Add the bot to your server
   - Go to the channel you want the bot to send PR updates to
+  - Register channel and take note of token generated
   - Add the repo to the bot using \`/repo add\`
   - Optionally tell each user on the team to add their github username to the bot using \`/user add\`
-  - Go to your github repo settings and a webhook with content type \`json\` selecting **only** Pull requests events and point it to ${process.env.SERVER_URL}/webhook/pr
+  - Go to your github repo settings and a webhook with content type \`json\` and with the previously generated token, selecting **only** Pull requests events and point it to ${process.env.SERVER_URL}/webhook/pr
   - Done!
 `
     );
