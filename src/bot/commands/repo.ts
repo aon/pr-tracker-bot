@@ -53,7 +53,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         // Validate channel exists
         const channel = isChannelExists(channelDiscordId);
         if (!channel) {
-          interaction.reply(CHANNEL_NOT_REGISTERED);
+          interaction.editReply(CHANNEL_NOT_REGISTERED);
           return;
         }
 
@@ -110,7 +110,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { repos: { select: { name: true } } },
         });
         if (!channel) {
-          interaction.reply(CHANNEL_NOT_REGISTERED);
+          interaction.editReply(CHANNEL_NOT_REGISTERED);
           return;
         }
 
@@ -131,7 +131,7 @@ const Command = buildSlashCommandSubCommandsOnly({
 
         const channel = isChannelExists(channelDiscordId);
         if (!channel) {
-          interaction.reply(CHANNEL_NOT_REGISTERED);
+          interaction.editReply(CHANNEL_NOT_REGISTERED);
           return;
         }
 
