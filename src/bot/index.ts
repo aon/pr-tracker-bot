@@ -6,6 +6,7 @@ import {
   CommandSubcommandsOnly,
 } from "@/interfaces/command";
 import { botLogger as logger } from "@/logger";
+import { getResponseTime } from "@/utils/performance";
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
@@ -54,9 +55,14 @@ const initializeBot = () => {
         `executing command '/${interaction.commandName}` +
           (subcommandName ? ` ${subcommandName}'` : "'")
       );
+      const startTime = performance.now();
       await interaction.reply("*Processing...*");
       await executable(interaction as CommandInteraction & { guildId: string });
-      logger.info("command executed successfully");
+      const endTime = performance.now();
+      logger.info(
+        { responseTime: getResponseTime(startTime, endTime) },
+        "command executed successfully"
+      );
     } catch (error) {
       logger.info("error executing command");
       logger.error(error);

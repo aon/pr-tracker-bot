@@ -34,6 +34,5 @@ export const httpLogger = pinoHttp({
     req: "request",
     res: "response",
     err: "error",
-    responseTime: "timeTaken",
   },
 });

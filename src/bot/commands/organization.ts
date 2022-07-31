@@ -1,16 +1,15 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
 import prisma from "@/db/client";
-import { ghRepoUserOrganizationSchema } from "./schemas";
 import {
-  CHANNEL_NOT_REGISTERED,
   RESOURCE_ADDED,
+  RESOURCE_ALREADY_EXISTS,
+  RESOURCE_DELETED,
   RESOURCE_LIST_EMPTY,
   RESOURCE_NOT_FOUND,
   VALIDATION_FAILED,
 } from "@/utils/bot-responses";
-import { RESOURCE_ALREADY_EXISTS } from "@/utils/bot-responses";
-import { isChannelExists } from "@/utils/bot-misc";
+import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { ghRepoUserOrganizationSchema } from "./schemas";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -52,15 +51,6 @@ const Command = buildSlashCommandSubCommandsOnly({
   subcommands: {
     [SUBCOMMAND_ADD]: {
       execute: async (interaction) => {
-        const channelDiscordId = BigInt(interaction.channelId);
-
-        // Validate channel exists
-        const channel = await isChannelExists(channelDiscordId);
-        if (!channel) {
-          interaction.editReply(CHANNEL_NOT_REGISTERED);
-          return;
-        }
-
         // Validate input
         let organizationName: string;
         try {
@@ -72,35 +62,45 @@ const Command = buildSlashCommandSubCommandsOnly({
           return;
         }
 
-        // Get organization from db
-        const organization = await prisma.organization.findFirst({
-          where: { name: organizationName },
-          select: { id: true, channels: { select: { discordId: true } } },
-        });
+        const channelDiscordId = BigInt(interaction.channelId);
+        const guildDiscordId = BigInt(interaction.guildId);
 
-        // Validate channel is not already subscribed to organization
-        if (organization?.channels.includes({ discordId: channelDiscordId })) {
+        // Check if organization exists attached to this channel
+        const organization = await prisma.organization.findFirst({
+          where: {
+            name: organizationName,
+            channels: { some: { discordId: channelDiscordId } },
+          },
+          select: { id: true },
+        });
+        if (organization) {
           await interaction.editReply(RESOURCE_ALREADY_EXISTS("organization"));
           return;
         }
 
-        // If organization exists, add channel to organization
-        if (organization) {
-          await prisma.organization.update({
-            where: { id: organization.id },
-            data: { channels: { connect: { discordId: channelDiscordId } } },
-          });
-        }
-        // If organization doesn't exist, create it
-        else {
-          await prisma.organization.create({
-            data: {
-              name: organizationName,
-              channels: { connect: { discordId: channelDiscordId } },
+        // Add or update organization subscription
+        const channel = [
+          {
+            where: { discordId: channelDiscordId },
+            create: {
+              discordId: channelDiscordId,
+              guild: {
+                connectOrCreate: {
+                  where: { discordId: guildDiscordId },
+                  create: { discordId: guildDiscordId },
+                },
+              },
             },
-          });
-        }
-
+          },
+        ];
+        await prisma.organization.upsert({
+          where: { name: organizationName },
+          update: { channels: { connectOrCreate: channel } },
+          create: {
+            name: organizationName,
+            channels: { connectOrCreate: channel },
+          },
+        });
         await interaction.editReply(
           RESOURCE_ADDED("organization", organizationName)
         );
@@ -115,11 +115,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           where: { discordId: channelDiscordId },
           select: { organizations: { select: { name: true } } },
         });
-        if (!channel) {
-          interaction.editReply(CHANNEL_NOT_REGISTERED);
-          return;
-        }
-        if (channel.organizations.length === 0) {
+        if (!channel || channel.organizations.length === 0) {
           await interaction.editReply(RESOURCE_LIST_EMPTY("organization"));
           return;
         }
@@ -133,12 +129,6 @@ const Command = buildSlashCommandSubCommandsOnly({
     [SUBCOMMAND_DELETE]: {
       execute: async (interaction) => {
         const channelDiscordId = BigInt(interaction.channelId);
-
-        const channel = await isChannelExists(channelDiscordId);
-        if (!channel) {
-          interaction.editReply(CHANNEL_NOT_REGISTERED);
-          return;
-        }
 
         let organizationName: string;
         try {
@@ -171,7 +161,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
         await interaction.editReply(
-          `✅ Organization deleted \`${organizationName}\` from this channel`
+          RESOURCE_DELETED("organization", organizationName)
         );
       },
     },

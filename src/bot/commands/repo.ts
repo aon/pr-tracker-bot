@@ -1,14 +1,15 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
 import prisma from "@/db/client";
-import { ghRepoUserOrganizationSchema } from "./schemas";
 import {
-  CHANNEL_NOT_REGISTERED,
   RESOURCE_ADDED,
   RESOURCE_ALREADY_EXISTS,
+  RESOURCE_DELETED,
+  RESOURCE_LIST_EMPTY,
+  RESOURCE_NOT_FOUND,
   VALIDATION_FAILED,
 } from "@/utils/bot-responses";
-import { isChannelExists } from "@/utils/bot-misc";
+import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { ghRepoUserOrganizationSchema } from "./schemas";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -48,15 +49,6 @@ const Command = buildSlashCommandSubCommandsOnly({
   subcommands: {
     [SUBCOMMAND_ADD]: {
       execute: async (interaction) => {
-        const channelDiscordId = BigInt(interaction.channelId);
-
-        // Validate channel exists
-        const channel = await isChannelExists(channelDiscordId);
-        if (!channel) {
-          interaction.editReply(CHANNEL_NOT_REGISTERED);
-          return;
-        }
-
         // Validate input
         let repoName: string;
         try {
@@ -68,34 +60,45 @@ const Command = buildSlashCommandSubCommandsOnly({
           return;
         }
 
-        // Check if repo exists with channel
-        const repo = await prisma.repo.findFirst({
-          where: { name: repoName },
-          select: { id: true, channels: { select: { discordId: true } } },
-        });
+        const channelDiscordId = BigInt(interaction.channelId);
+        const guildDiscordId = BigInt(interaction.guildId);
 
-        // Validate channel is not already subscribed to repo
-        if (repo?.channels.includes({ discordId: channelDiscordId })) {
+        // Check if repo exists attached to this channel
+        const repo = await prisma.repo.findFirst({
+          where: {
+            name: repoName,
+            channels: { some: { discordId: channelDiscordId } },
+          },
+          select: { id: true },
+        });
+        if (repo) {
           await interaction.editReply(RESOURCE_ALREADY_EXISTS("repo"));
           return;
         }
 
-        // If organization exists, add channel to repo
-        if (repo) {
-          await prisma.repo.update({
-            where: { id: repo.id },
-            data: { channels: { connect: { discordId: channelDiscordId } } },
-          });
-        }
-        // If repo doesn't exist, create it
-        else {
-          await prisma.repo.create({
-            data: {
-              name: repoName,
-              channels: { connect: { discordId: channelDiscordId } },
+        // Add or update repo subscription
+        const channel = [
+          {
+            where: { discordId: channelDiscordId },
+            create: {
+              discordId: channelDiscordId,
+              guild: {
+                connectOrCreate: {
+                  where: { discordId: guildDiscordId },
+                  create: { discordId: guildDiscordId },
+                },
+              },
             },
-          });
-        }
+          },
+        ];
+        await prisma.repo.upsert({
+          where: { name: repoName },
+          update: { channels: { connectOrCreate: channel } },
+          create: {
+            name: repoName,
+            channels: { connectOrCreate: channel },
+          },
+        });
 
         await interaction.editReply(RESOURCE_ADDED("repo", repoName));
       },
@@ -109,15 +112,12 @@ const Command = buildSlashCommandSubCommandsOnly({
           where: { discordId: channelDiscordId },
           select: { repos: { select: { name: true } } },
         });
-        if (!channel) {
-          interaction.editReply(CHANNEL_NOT_REGISTERED);
+
+        if (!channel || channel.repos.length === 0) {
+          await interaction.editReply(RESOURCE_LIST_EMPTY("repo"));
           return;
         }
 
-        if (channel.repos.length === 0) {
-          await interaction.editReply(`😢 No repos found`);
-          return;
-        }
         const printUsers = channel.repos
           .map((repo) => `    •  ${repo.name}`)
           .join("\n");
@@ -128,12 +128,6 @@ const Command = buildSlashCommandSubCommandsOnly({
     [SUBCOMMAND_DELETE]: {
       execute: async (interaction) => {
         const channelDiscordId = BigInt(interaction.channelId);
-
-        const channel = await isChannelExists(channelDiscordId);
-        if (!channel) {
-          interaction.editReply(CHANNEL_NOT_REGISTERED);
-          return;
-        }
 
         let repoName: string;
         try {
@@ -153,7 +147,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { id: true, channels: { select: { id: true } } },
         });
         if (!repo) {
-          await interaction.editReply(`❌ Repo not found`);
+          await interaction.editReply(RESOURCE_NOT_FOUND("repo"));
           return;
         }
 
@@ -165,9 +159,7 @@ const Command = buildSlashCommandSubCommandsOnly({
             },
           },
         });
-        await interaction.editReply(
-          `✅ Repo deleted \`${repoName}\` from this channel`
-        );
+        await interaction.editReply(RESOURCE_DELETED("repo", repoName));
       },
     },
   },

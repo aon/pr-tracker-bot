@@ -31,3 +31,9 @@ export const RESOURCE_ADDED = (
   resource: "organization" | "repo",
   name: string
 ) => `✅ New ${resource} registered \`${name}\``;
+
+export const RESOURCE_DELETED = (
+  resource: "organization" | "repo",
+  name: string
+) =>
+  `✅ ${capitalizeFirstLetter(resource)} \`${name}\` deleted from this channel`;
