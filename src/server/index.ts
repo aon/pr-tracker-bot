@@ -2,6 +2,7 @@ import { handleWebhook } from "@/utils/gh-webhooks";
 import { StatusCodes } from "http-status-codes";
 import express from "express";
 import { httpLogger, serverLogger as logger } from "@/logger";
+import { verifySignature } from "@/utils/gh-token";
 
 const initializeServer = () => {
   const app = express();
@@ -13,6 +14,29 @@ const initializeServer = () => {
 
   app.post("/webhook/pr", async (req, res) => {
     try {
+      // Authenticate request
+      const secret = process.env.GITHUB_SECRET;
+      if (secret !== undefined) {
+        const signature = req.headers["x-hub-signature-256"] as
+          | string
+          | undefined;
+        if (signature === undefined) {
+          logger.warn("missing signature");
+          return res.status(StatusCodes.UNAUTHORIZED).send();
+        }
+
+        const isValid = verifySignature({
+          signature: signature.slice(7), // remove "sha256="
+          secret,
+          payload: JSON.stringify(req.body),
+        });
+        if (!isValid) {
+          logger.warn("invalid signature");
+          return res.status(StatusCodes.UNAUTHORIZED).send();
+        }
+      }
+
+      // Handle webhook
       const failedMessages = await handleWebhook(req.body);
       if (failedMessages.length === 0) {
         logger.info("webhook handled successfully");
@@ -28,7 +52,7 @@ const initializeServer = () => {
     } catch (error) {
       logger.info("failed to handle webhook");
       logger.warn(error);
-      return res.status(StatusCodes.BAD_REQUEST).end();
+      return res.status(StatusCodes.BAD_REQUEST).send();
     }
   });
 
