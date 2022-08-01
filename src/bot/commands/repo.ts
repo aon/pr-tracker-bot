@@ -3,6 +3,7 @@ import {
   RESOURCE_ADDED,
   RESOURCE_ALREADY_EXISTS,
   RESOURCE_DELETED,
+  RESOURCE_LIST,
   RESOURCE_LIST_EMPTY,
   RESOURCE_NOT_FOUND,
   VALIDATION_FAILED,
@@ -26,7 +27,9 @@ const Command = buildSlashCommandSubCommandsOnly({
         .addStringOption((option) =>
           option
             .setName("name")
-            .setDescription("Complete repo name as in `<user>/<repo>`")
+            .setDescription(
+              "Complete repo name as in <user or organization>/<repo>"
+            )
             .setRequired(true)
         )
     )
@@ -118,10 +121,12 @@ const Command = buildSlashCommandSubCommandsOnly({
           return;
         }
 
-        const printUsers = channel.repos
-          .map((repo) => `    •  ${repo.name}`)
-          .join("\n");
-        await interaction.editReply(`🔎 Repos found:\n${printUsers}`);
+        await interaction.editReply(
+          RESOURCE_LIST(
+            "repo",
+            channel.repos.map((repo) => repo.name)
+          )
+        );
       },
     },
 

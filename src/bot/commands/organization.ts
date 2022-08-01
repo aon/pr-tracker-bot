@@ -3,6 +3,7 @@ import {
   RESOURCE_ADDED,
   RESOURCE_ALREADY_EXISTS,
   RESOURCE_DELETED,
+  RESOURCE_LIST,
   RESOURCE_LIST_EMPTY,
   RESOURCE_NOT_FOUND,
   VALIDATION_FAILED,
@@ -119,10 +120,12 @@ const Command = buildSlashCommandSubCommandsOnly({
           await interaction.editReply(RESOURCE_LIST_EMPTY("organization"));
           return;
         }
-        const printUsers = channel.organizations
-          .map((organization) => `    •  ${organization.name}`)
-          .join("\n");
-        await interaction.editReply(`🔎 Organizations found:\n${printUsers}`);
+        await interaction.editReply(
+          RESOURCE_LIST(
+            "organization",
+            channel.organizations.map((organization) => organization.name)
+          )
+        );
       },
     },
 

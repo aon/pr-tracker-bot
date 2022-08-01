@@ -3,7 +3,15 @@ import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
 import prisma from "@/db/client";
 import { mention } from "@/utils/bot-messages";
 import { ghRepoUserOrganizationSchema } from "./schemas";
-import { VALIDATION_FAILED } from "@/utils/bot-responses";
+import {
+  RESOURCE_ADDED,
+  RESOURCE_ALREADY_EXISTS,
+  RESOURCE_DELETED,
+  RESOURCE_LIST,
+  RESOURCE_LIST_EMPTY,
+  RESOURCE_NOT_FOUND,
+  VALIDATION_FAILED,
+} from "@/utils/bot-responses";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -71,7 +79,7 @@ const Command = buildSlashCommandSubCommandsOnly({
             select: { id: true },
           });
           if (user) {
-            await interaction.editReply(`❌ User already exists`);
+            await interaction.editReply(RESOURCE_ALREADY_EXISTS("user"));
             return;
           }
         }
@@ -89,7 +97,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
         await interaction.editReply(
-          `✅ New user registered \`${githubUser}\` ↔ ${interaction.user}`
+          RESOURCE_ADDED("user", `\`${githubUser}\` ↔ ${interaction.user}`)
         );
       },
     },
@@ -106,16 +114,18 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
         if (users.length === 0) {
-          await interaction.editReply(`😢 No users found`);
+          await interaction.editReply(RESOURCE_LIST_EMPTY("user"));
           return;
         }
-        const printUsers = users
-          .map(
-            (user) =>
-              `    •  \`${user.githubUser}\` ↔ ${mention(user.discordId)} `
+
+        await interaction.editReply(
+          RESOURCE_LIST(
+            "user",
+            users.map(
+              (user) => `\`${user.githubUser}\` ↔ ${mention(user.discordId)}`
+            )
           )
-          .join("\n");
-        await interaction.editReply(`🔎 Users found:\n${printUsers}`);
+        );
       },
     },
 
@@ -144,7 +154,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { id: true },
         });
         if (!user) {
-          await interaction.editReply(`❌ No user found with that name`);
+          await interaction.editReply(RESOURCE_NOT_FOUND("user"));
           return;
         }
 
@@ -154,7 +164,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
         await interaction.editReply(
-          `✅ User deleted \`${githubUser}\` ↔ ${interaction.user}`
+          RESOURCE_DELETED("user", `\`${githubUser}\` ↔ ${interaction.user}`)
         );
       },
     },

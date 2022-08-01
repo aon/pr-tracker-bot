@@ -68,7 +68,7 @@ const initializeBot = () => {
       logger.error(error);
       try {
         await interaction.editReply({
-          content: "There was an error while executing this command 😥",
+          content: "☠️ There was an error while executing this command",
         });
       } catch (error) {
         logger.info("error while sending error message");
