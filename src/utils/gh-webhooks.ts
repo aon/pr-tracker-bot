@@ -8,6 +8,11 @@ import {
 } from "./bot-messages";
 
 export const handleWebhook = async (payload: PullRequestWebhook) => {
+  // Check if webhook is pull_request
+  if (payload.pull_request === undefined) {
+    throw new Error("webhook is not a pull request");
+  }
+
   logger.info(
     {
       payload: {
@@ -23,10 +28,6 @@ export const handleWebhook = async (payload: PullRequestWebhook) => {
     "handling webhook"
   );
 
-  // Check if webhook is pull_request
-  if (payload.pull_request === undefined) {
-    throw new Error("webhook is not a pull request");
-  }
 
   // Check if organization exists
   let organization = null;
