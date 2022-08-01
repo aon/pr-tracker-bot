@@ -30,7 +30,7 @@ export const RESOURCE_LIST = (
   resource: Resource,
   list: string[]
 ) =>
-  `🔎 ${capitalizeFirstLetter(resource)} found:\n${list
+  `🔎 ${capitalizeFirstLetter(resource)}s found:\n${list
     .map((item) => `    -  ${item}`)
     .join("\n")}`;
 
