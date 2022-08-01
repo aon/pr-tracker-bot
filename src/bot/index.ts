@@ -56,7 +56,7 @@ const initializeBot = () => {
           (subcommandName ? ` ${subcommandName}'` : "'")
       );
       const startTime = performance.now();
-      await interaction.reply("*Processing...*");
+      await interaction.reply({ content: "*Processing...*", ephemeral: true });
       await executable(interaction as CommandInteraction & { guildId: string });
       const endTime = performance.now();
       logger.info(
