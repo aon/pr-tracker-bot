@@ -1,8 +1,6 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
 import prisma from "@/db/client";
 import { mention } from "@/utils/bot-messages";
-import { ghRepoUserOrganizationSchema } from "./schemas";
+import Response from "@/utils/bot-response-helper";
 import {
   RESOURCE_ADDED,
   RESOURCE_ALREADY_EXISTS,
@@ -12,6 +10,9 @@ import {
   RESOURCE_NOT_FOUND,
   VALIDATION_FAILED,
 } from "@/utils/bot-responses";
+import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { ghRepoUserOrganizationSchema } from "./schemas";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -57,7 +58,7 @@ const Command = buildSlashCommandSubCommandsOnly({
             interaction.options.getString("username", true)
           );
         } catch (error) {
-          interaction.editReply(VALIDATION_FAILED);
+          await new Response(interaction).setCommon(VALIDATION_FAILED).send();
           return;
         }
         const userDiscordId = BigInt(interaction.user.id);
@@ -79,7 +80,7 @@ const Command = buildSlashCommandSubCommandsOnly({
             select: { id: true },
           });
           if (user) {
-            await interaction.editReply(RESOURCE_ALREADY_EXISTS("user"));
+            await new Response(interaction).setCommon(RESOURCE_ALREADY_EXISTS,"user").send();
             return;
           }
         }
@@ -96,9 +97,13 @@ const Command = buildSlashCommandSubCommandsOnly({
             },
           },
         });
-        await interaction.editReply(
-          RESOURCE_ADDED("user", `\`${githubUser}\` ↔ ${interaction.user}`)
-        );
+        await new Response(interaction)
+          .setCommon(
+            RESOURCE_ADDED,
+            "user",
+            `\`${githubUser}\` ↔ ${interaction.user}`
+          )
+          .send();
       },
     },
 
@@ -114,18 +119,21 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
         if (users.length === 0) {
-          await interaction.editReply(RESOURCE_LIST_EMPTY("user"));
+          await new Response(interaction)
+            .setCommon(RESOURCE_LIST_EMPTY, "user")
+            .send();
           return;
         }
 
-        await interaction.editReply(
-          RESOURCE_LIST(
+        await new Response(interaction)
+          .setCommon(
+            RESOURCE_LIST,
             "user",
             users.map(
               (user) => `\`${user.githubUser}\` ↔ ${mention(user.discordId)}`
             )
           )
-        );
+          .send();
       },
     },
 
@@ -137,7 +145,7 @@ const Command = buildSlashCommandSubCommandsOnly({
             interaction.options.getString("username", true)
           );
         } catch (error) {
-          interaction.editReply(VALIDATION_FAILED);
+          await new Response(interaction).setCommon(VALIDATION_FAILED).send();
           return;
         }
         const userDiscordId = BigInt(interaction.user.id);
@@ -154,7 +162,9 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { id: true },
         });
         if (!user) {
-          await interaction.editReply(RESOURCE_NOT_FOUND("user"));
+          await new Response(interaction)
+            .setCommon(RESOURCE_NOT_FOUND, "user")
+            .send();
           return;
         }
 
@@ -163,9 +173,13 @@ const Command = buildSlashCommandSubCommandsOnly({
             id: user.id,
           },
         });
-        await interaction.editReply(
-          RESOURCE_DELETED("user", `\`${githubUser}\` ↔ ${interaction.user}`)
-        );
+        await new Response(interaction)
+          .setCommon(
+            RESOURCE_DELETED,
+            "user",
+            `\`${githubUser}\` ↔ ${interaction.user}`
+          )
+          .send();
       },
     },
   },

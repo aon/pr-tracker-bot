@@ -1,4 +1,5 @@
 import prisma from "@/db/client";
+import Response from "@/utils/bot-response-helper";
 import {
   RESOURCE_ADDED,
   RESOURCE_ALREADY_EXISTS,
@@ -59,7 +60,7 @@ const Command = buildSlashCommandSubCommandsOnly({
             interaction.options.getString("name", true)
           );
         } catch (error) {
-          interaction.editReply(VALIDATION_FAILED);
+          await new Response(interaction).setCommon(VALIDATION_FAILED).send();
           return;
         }
 
@@ -75,7 +76,9 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { id: true },
         });
         if (repo) {
-          await interaction.editReply(RESOURCE_ALREADY_EXISTS("repo"));
+          await new Response(interaction)
+            .setCommon(RESOURCE_ALREADY_EXISTS, "repo")
+            .send();
           return;
         }
 
@@ -103,7 +106,9 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
 
-        await interaction.editReply(RESOURCE_ADDED("repo", repoName));
+        await new Response(interaction)
+          .setCommon(RESOURCE_ADDED, "repo", repoName)
+          .send();
       },
     },
 
@@ -117,16 +122,19 @@ const Command = buildSlashCommandSubCommandsOnly({
         });
 
         if (!channel || channel.repos.length === 0) {
-          await interaction.editReply(RESOURCE_LIST_EMPTY("repo"));
+          await new Response(interaction)
+            .setCommon(RESOURCE_LIST_EMPTY, "repo")
+            .send();
           return;
         }
 
-        await interaction.editReply(
-          RESOURCE_LIST(
+        await new Response(interaction)
+          .setCommon(
+            RESOURCE_LIST,
             "repo",
             channel.repos.map((repo) => repo.name)
           )
-        );
+          .send();
       },
     },
 
@@ -140,7 +148,7 @@ const Command = buildSlashCommandSubCommandsOnly({
             interaction.options.getString("name", true)
           );
         } catch (error) {
-          interaction.editReply(VALIDATION_FAILED);
+          await new Response(interaction).setCommon(VALIDATION_FAILED).send();
           return;
         }
 
@@ -152,7 +160,9 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { id: true, channels: { select: { id: true } } },
         });
         if (!repo) {
-          await interaction.editReply(RESOURCE_NOT_FOUND("repo"));
+          await new Response(interaction)
+            .setCommon(RESOURCE_NOT_FOUND, "repo")
+            .send();
           return;
         }
 
@@ -164,7 +174,9 @@ const Command = buildSlashCommandSubCommandsOnly({
             },
           },
         });
-        await interaction.editReply(RESOURCE_DELETED("repo", repoName));
+        await new Response(interaction)
+          .setCommon(RESOURCE_DELETED, "repo", repoName)
+          .send();
       },
     },
   },

@@ -1,4 +1,5 @@
 import prisma from "@/db/client";
+import Response from "@/utils/bot-response-helper";
 import {
   RESOURCE_ADDED,
   RESOURCE_ALREADY_EXISTS,
@@ -59,7 +60,7 @@ const Command = buildSlashCommandSubCommandsOnly({
             interaction.options.getString("name", true)
           );
         } catch (error) {
-          interaction.editReply(VALIDATION_FAILED);
+          await new Response(interaction).setCommon(VALIDATION_FAILED).send();
           return;
         }
 
@@ -75,7 +76,9 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { id: true },
         });
         if (organization) {
-          await interaction.editReply(RESOURCE_ALREADY_EXISTS("organization"));
+          await new Response(interaction)
+            .setCommon(RESOURCE_ALREADY_EXISTS, "organization")
+            .send();
           return;
         }
 
@@ -102,9 +105,9 @@ const Command = buildSlashCommandSubCommandsOnly({
             channels: { connectOrCreate: channel },
           },
         });
-        await interaction.editReply(
-          RESOURCE_ADDED("organization", organizationName)
-        );
+        await new Response(interaction)
+          .setCommon(RESOURCE_ADDED, "organization", organizationName)
+          .send();
       },
     },
 
@@ -117,15 +120,18 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { organizations: { select: { name: true } } },
         });
         if (!channel || channel.organizations.length === 0) {
-          await interaction.editReply(RESOURCE_LIST_EMPTY("organization"));
+          await new Response(interaction)
+            .setCommon(RESOURCE_LIST_EMPTY, "organization")
+            .send();
           return;
         }
-        await interaction.editReply(
-          RESOURCE_LIST(
+        await new Response(interaction)
+          .setCommon(
+            RESOURCE_LIST,
             "organization",
             channel.organizations.map((organization) => organization.name)
           )
-        );
+          .send();
       },
     },
 
@@ -139,7 +145,7 @@ const Command = buildSlashCommandSubCommandsOnly({
             interaction.options.getString("name", true)
           );
         } catch (error) {
-          interaction.editReply(VALIDATION_FAILED);
+          await new Response(interaction).setCommon(VALIDATION_FAILED).send();
           return;
         }
 
@@ -151,7 +157,9 @@ const Command = buildSlashCommandSubCommandsOnly({
           select: { id: true, channels: { select: { id: true } } },
         });
         if (!organization) {
-          await interaction.editReply(RESOURCE_NOT_FOUND("organization"));
+          await new Response(interaction)
+            .setCommon(RESOURCE_NOT_FOUND, "organization")
+            .send();
           return;
         }
 
@@ -163,9 +171,9 @@ const Command = buildSlashCommandSubCommandsOnly({
             },
           },
         });
-        await interaction.editReply(
-          RESOURCE_DELETED("organization", organizationName)
-        );
+        await new Response(interaction)
+          .setCommon(RESOURCE_DELETED, "organization", organizationName)
+          .send();
       },
     },
   },
