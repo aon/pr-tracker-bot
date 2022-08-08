@@ -124,6 +124,10 @@ export const mention = (discordId: BigInt) => {
   return `<@${discordId}>`;
 };
 
+export const inlineCode = (code: string) => {
+  return `\`${code}\``;
+};
+
 const getUserList = (
   users: User[],
   usernameToDiscordId: { [username: string]: BigInt }

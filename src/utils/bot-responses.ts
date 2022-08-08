@@ -10,17 +10,19 @@ export const VALIDATION_FAILED = () => ({
   title: "🙃 Invalid input, please try again",
 });
 
-export const RESOURCE_ALREADY_EXISTS = (resource: Resource) => ({
+export const RESOURCE_ALREADY_EXISTS = (resource: Resource, name: string) => ({
   title: `❌ ${capitalizeFirstLetter(resource)} already exists`,
+  description: name,
 });
 
-export const RESOURCE_NOT_FOUND = (resource: Resource) => ({
+export const RESOURCE_NOT_FOUND = (resource: Resource, name: string) => ({
   title: `❌ ${capitalizeFirstLetter(resource)} not found`,
+  description: name,
 });
 
 export const RESOURCE_LIST = (resource: Resource, list: string[]) => ({
   title: `🔎 ${capitalizeFirstLetter(resource)}s found:`,
-  description: `${list.map((item) => `    -  \`${item}\``).join("\n")}`,
+  description: `${list.map((item) => `    -  ${item}`).join("\n")}`,
 });
 
 export const RESOURCE_LIST_EMPTY = (resource: Resource) => ({
@@ -28,11 +30,11 @@ export const RESOURCE_LIST_EMPTY = (resource: Resource) => ({
 });
 
 export const RESOURCE_ADDED = (resource: Resource, name: string) => ({
-  title: `✅ New ${resource} registered \`${name}\``,
+  title: `✅ New ${resource} registered`,
+  description: name,
 });
 
 export const RESOURCE_DELETED = (resource: Resource, name: string) => ({
-  title: `✅ ${capitalizeFirstLetter(
-    resource
-  )} \`${name}\` deleted from this channel`,
+  title: `✅ ${capitalizeFirstLetter(resource)} deleted`,
+  description: name,
 });

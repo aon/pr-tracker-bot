@@ -1,5 +1,5 @@
 import prisma from "@/db/client";
-import { mention } from "@/utils/bot-messages";
+import { inlineCode, mention } from "@/utils/bot-messages";
 import Response from "@/utils/bot-response-helper";
 import {
   RESOURCE_ADDED,
@@ -12,7 +12,7 @@ import {
 } from "@/utils/bot-responses";
 import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { ghRepoUserOrganizationSchema } from "./schemas";
+import { ghUserOrganizationSchema } from "./schemas";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -54,7 +54,7 @@ const Command = buildSlashCommandSubCommandsOnly({
       execute: async (interaction) => {
         let githubUser: string;
         try {
-          githubUser = await ghRepoUserOrganizationSchema.validateAsync(
+          githubUser = await ghUserOrganizationSchema.validateAsync(
             interaction.options.getString("username", true)
           );
         } catch (error) {
@@ -80,7 +80,13 @@ const Command = buildSlashCommandSubCommandsOnly({
             select: { id: true },
           });
           if (user) {
-            await new Response(interaction).setCommon(RESOURCE_ALREADY_EXISTS,"user").send();
+            await new Response(interaction)
+              .setCommon(
+                RESOURCE_ALREADY_EXISTS,
+                "user",
+                inlineCode(githubUser)
+              )
+              .send();
             return;
           }
         }
@@ -101,7 +107,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           .setCommon(
             RESOURCE_ADDED,
             "user",
-            `\`${githubUser}\` ↔ ${interaction.user}`
+            `${inlineCode(githubUser)} ↔ ${interaction.user}`
           )
           .send();
       },
@@ -130,7 +136,8 @@ const Command = buildSlashCommandSubCommandsOnly({
             RESOURCE_LIST,
             "user",
             users.map(
-              (user) => `\`${user.githubUser}\` ↔ ${mention(user.discordId)}`
+              (user) =>
+                `${inlineCode(user.githubUser)} ↔ ${mention(user.discordId)}`
             )
           )
           .send();
@@ -141,7 +148,7 @@ const Command = buildSlashCommandSubCommandsOnly({
       execute: async (interaction) => {
         let githubUser: string;
         try {
-          githubUser = await ghRepoUserOrganizationSchema.validateAsync(
+          githubUser = await ghUserOrganizationSchema.validateAsync(
             interaction.options.getString("username", true)
           );
         } catch (error) {
@@ -163,7 +170,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         });
         if (!user) {
           await new Response(interaction)
-            .setCommon(RESOURCE_NOT_FOUND, "user")
+            .setCommon(RESOURCE_NOT_FOUND, "user", inlineCode(githubUser))
             .send();
           return;
         }
@@ -177,7 +184,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           .setCommon(
             RESOURCE_DELETED,
             "user",
-            `\`${githubUser}\` ↔ ${interaction.user}`
+            `${inlineCode(githubUser)} ↔ ${interaction.user}`
           )
           .send();
       },

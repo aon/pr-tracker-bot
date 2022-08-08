@@ -1,4 +1,5 @@
 import prisma from "@/db/client";
+import { inlineCode } from "@/utils/bot-messages";
 import Response from "@/utils/bot-response-helper";
 import {
   RESOURCE_ADDED,
@@ -11,7 +12,7 @@ import {
 } from "@/utils/bot-responses";
 import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { ghRepoUserOrganizationSchema } from "./schemas";
+import { ghRepoSchema } from "./schemas";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -56,7 +57,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         // Validate input
         let repoName: string;
         try {
-          repoName = await ghRepoUserOrganizationSchema.validateAsync(
+          repoName = await ghRepoSchema.validateAsync(
             interaction.options.getString("name", true)
           );
         } catch (error) {
@@ -77,7 +78,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         });
         if (repo) {
           await new Response(interaction)
-            .setCommon(RESOURCE_ALREADY_EXISTS, "repo")
+            .setCommon(RESOURCE_ALREADY_EXISTS, "repo", inlineCode(repoName))
             .send();
           return;
         }
@@ -107,7 +108,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         });
 
         await new Response(interaction)
-          .setCommon(RESOURCE_ADDED, "repo", repoName)
+          .setCommon(RESOURCE_ADDED, "repo", inlineCode(repoName))
           .send();
       },
     },
@@ -132,7 +133,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           .setCommon(
             RESOURCE_LIST,
             "repo",
-            channel.repos.map((repo) => repo.name)
+            channel.repos.map((repo) => inlineCode(repo.name))
           )
           .send();
       },
@@ -144,7 +145,7 @@ const Command = buildSlashCommandSubCommandsOnly({
 
         let repoName: string;
         try {
-          repoName = await ghRepoUserOrganizationSchema.validateAsync(
+          repoName = await ghRepoSchema.validateAsync(
             interaction.options.getString("name", true)
           );
         } catch (error) {
@@ -161,7 +162,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         });
         if (!repo) {
           await new Response(interaction)
-            .setCommon(RESOURCE_NOT_FOUND, "repo")
+            .setCommon(RESOURCE_NOT_FOUND, "repo", inlineCode(repoName))
             .send();
           return;
         }
@@ -175,7 +176,7 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
         await new Response(interaction)
-          .setCommon(RESOURCE_DELETED, "repo", repoName)
+          .setCommon(RESOURCE_DELETED, "repo", inlineCode(repoName))
           .send();
       },
     },

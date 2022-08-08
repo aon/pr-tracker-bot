@@ -1,4 +1,5 @@
 import prisma from "@/db/client";
+import { inlineCode } from "@/utils/bot-messages";
 import Response from "@/utils/bot-response-helper";
 import {
   RESOURCE_ADDED,
@@ -11,7 +12,7 @@ import {
 } from "@/utils/bot-responses";
 import { buildSlashCommandSubCommandsOnly } from "@/utils/bot-slash-commands";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { ghRepoUserOrganizationSchema } from "./schemas";
+import { ghUserOrganizationSchema } from "./schemas";
 
 const SUBCOMMAND_ADD = "add";
 const SUBCOMMAND_LIST = "list";
@@ -56,7 +57,7 @@ const Command = buildSlashCommandSubCommandsOnly({
         // Validate input
         let organizationName: string;
         try {
-          organizationName = await ghRepoUserOrganizationSchema.validateAsync(
+          organizationName = await ghUserOrganizationSchema.validateAsync(
             interaction.options.getString("name", true)
           );
         } catch (error) {
@@ -77,7 +78,11 @@ const Command = buildSlashCommandSubCommandsOnly({
         });
         if (organization) {
           await new Response(interaction)
-            .setCommon(RESOURCE_ALREADY_EXISTS, "organization")
+            .setCommon(
+              RESOURCE_ALREADY_EXISTS,
+              "organization",
+              inlineCode(organizationName)
+            )
             .send();
           return;
         }
@@ -106,7 +111,11 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
         await new Response(interaction)
-          .setCommon(RESOURCE_ADDED, "organization", organizationName)
+          .setCommon(
+            RESOURCE_ADDED,
+            "organization",
+            inlineCode(organizationName)
+          )
           .send();
       },
     },
@@ -129,7 +138,9 @@ const Command = buildSlashCommandSubCommandsOnly({
           .setCommon(
             RESOURCE_LIST,
             "organization",
-            channel.organizations.map((organization) => organization.name)
+            channel.organizations.map((organization) =>
+              inlineCode(organization.name)
+            )
           )
           .send();
       },
@@ -141,7 +152,7 @@ const Command = buildSlashCommandSubCommandsOnly({
 
         let organizationName: string;
         try {
-          organizationName = await ghRepoUserOrganizationSchema.validateAsync(
+          organizationName = await ghUserOrganizationSchema.validateAsync(
             interaction.options.getString("name", true)
           );
         } catch (error) {
@@ -158,7 +169,11 @@ const Command = buildSlashCommandSubCommandsOnly({
         });
         if (!organization) {
           await new Response(interaction)
-            .setCommon(RESOURCE_NOT_FOUND, "organization")
+            .setCommon(
+              RESOURCE_NOT_FOUND,
+              "organization",
+              inlineCode(organizationName)
+            )
             .send();
           return;
         }
@@ -172,7 +187,11 @@ const Command = buildSlashCommandSubCommandsOnly({
           },
         });
         await new Response(interaction)
-          .setCommon(RESOURCE_DELETED, "organization", organizationName)
+          .setCommon(
+            RESOURCE_DELETED,
+            "organization",
+            inlineCode(organizationName)
+          )
           .send();
       },
     },
