@@ -80,7 +80,7 @@ const initializeServer = () => {
   });
 
   app.use((_req, res) => {
-    return res.status(StatusCodes.NOT_FOUND).send("route not found");
+    return res.status(StatusCodes.NOT_FOUND).send();
   });
 
   app.listen(port, () => {
