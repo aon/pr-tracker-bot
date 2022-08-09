@@ -3,10 +3,12 @@ import { StatusCodes } from "http-status-codes";
 import express from "express";
 import { httpLogger, serverLogger as logger } from "@/logger";
 import { verifySignature } from "@/utils/gh-token";
+import { version } from "../../package.json";
+import { client } from "@/bot";
 
 const initializeServer = () => {
   const app = express();
-  const port = process.env.SERVER_PORT || 3000;
+  const port = process.env.SERVER_PORT || 8080;
 
   app.use(httpLogger);
   app.use(express.json());
@@ -51,6 +53,27 @@ const initializeServer = () => {
       });
     } catch (error) {
       logger.info("failed to handle webhook");
+      logger.warn(error);
+      return res.status(StatusCodes.BAD_REQUEST).send();
+    }
+  });
+
+  app.get("/healthcheck", async (_req, res) => {
+    try {
+      const isBotReady = client.isReady();
+
+      if (!isBotReady) {
+        logger.warn("bot is not ready");
+        return res.status(StatusCodes.SERVICE_UNAVAILABLE).send();
+      }
+
+      return res.status(StatusCodes.OK).send({
+        version,
+        status: "ok",
+        uptime: process.uptime(),
+      });
+    } catch (error) {
+      logger.info("failed to handle healthcheck");
       logger.warn(error);
       return res.status(StatusCodes.BAD_REQUEST).send();
     }

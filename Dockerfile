@@ -12,3 +12,5 @@ RUN npm prune --omit=dev
 RUN rm -rf src
 
 CMD [ "npm", "start" ]
+
+HEALTHCHECK CMD curl -f http://localhost:8080/healthcheck || exit 1
