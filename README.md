@@ -20,7 +20,7 @@ So as you can see, this bot lets you:
 
 - Keep track of PRs in multiple repositories and organizations per channel
 - Print all related data including description in full markdown, assigness left, reviewers, PR status and author
-- Mention users that had registered their github account
+- Mention users that had registered their github account on discord
 
 ## Deploying
 
@@ -66,3 +66,4 @@ Brief explanation on environment variables:
 - `DISCORD_CLIENT_ID`: your discord app id
 - `SERVER_URL`: the url of where you are hosting this bot, needed just for the /about slash command
 - `GITHUB_SECRET`: (optional) set when you want your webhooks to be authenticated
+
