@@ -23,6 +23,15 @@ const initializeBot = () => {
     }
     if (!interaction.guildId) {
       logger.warn("interaction is not in a guild");
+      try {
+        await interaction.reply({
+          content: "❌ Please add the bot to a server before using it",
+          ephemeral: true,
+        });
+      } catch (error) {
+        logger.info("error while sending error message");
+        logger.error(error);
+      }
       return;
     }
 
