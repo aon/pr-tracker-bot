@@ -23,7 +23,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            agustinaon/pr-tracker-discord-bot
+            agustinaon/pr-tracker-bot
           tags: |
             type=ref,event=branch
             type=ref,event=pr

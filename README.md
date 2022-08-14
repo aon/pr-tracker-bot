@@ -1,4 +1,4 @@
-# PR Tracker Discord Bot
+# PR Tracker Bot
 
 I've built this bot to satisfy a very particular need we had with my team: track our PRs on Discord.
 
