@@ -24,7 +24,7 @@ So as you can see, this bot lets you:
 
 ## Deploying
 
-If you're sold this far and want to try it on your own, this is self-hosted, so you'll need: a database and somewhere to host it, with a public and static url so that github can point to for sending PRs data.
+If you're sold so far and want to try it on your own, this is self-hosted, so you'll need: a database and somewhere to host it, with a public and static url so that github can point to for sending PRs data.
 
 Then you can just run it with:
 
@@ -67,3 +67,8 @@ Brief explanation on environment variables:
 - `SERVER_URL`: the url of where you are hosting this bot, needed just for the /about slash command
 - `GITHUB_SECRET`: (optional) set when you want your webhooks to be authenticated
 
+You'll need to create a discord bot as well, with the following permissions:
+
+```
+&permissions=18432&scope=applications.commands%20bot
+```
