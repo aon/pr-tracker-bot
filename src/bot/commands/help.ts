@@ -24,10 +24,11 @@ const HelpCommand = buildSlashCommand({
             "🧩 Instructions",
             `1. Add the bot to your server\n
           2. Go to the channel you want the bot to send PR updates to\n
-          3. Add the repo to the bot using \`/repo add\`\n
-          4. Optionally tell each user on the team to add their github username to the bot using \`/user add\`\n
-          5. Go to your github repo settings and a webhook with content type \`json\` and with the secret you defined in your envs, selecting **only** Pull requests events and point it to ${process.env.SERVER_URL}/webhook/pr\n
-          6. Done!`
+          3. Add the repos you wanna track using \`/repo add\`\n
+          4. Add the organizationsyou wanna track using \`/organization add\`\n
+          5. Optionally tell each user on the team to add their github username to the bot using \`/user add\`\n
+          6. Go to your github repo/organization settings and add a webhook with content type \`json\` and with the secret you defined in your envs, selecting **only** Pull requests events and point it to ${process.env.SERVER_URL}/webhook/pr\n
+          7. Done!`
           )
       )
       .send();
