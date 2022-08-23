@@ -22,7 +22,7 @@ export const RESOURCE_NOT_FOUND = (resource: Resource, name: string) => ({
 
 export const RESOURCE_LIST = (resource: Resource, list: string[]) => ({
   title: `🔎 ${capitalizeFirstLetter(resource)}s found:`,
-  description: `${list.map((item) => `    -  ${item}`).join("\n")}`,
+  description: `${list.map((item) => `- ${item}`).join("\n")}`,
 });
 
 export const RESOURCE_LIST_EMPTY = (resource: Resource) => ({
