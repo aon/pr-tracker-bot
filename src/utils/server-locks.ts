@@ -1,14 +1,19 @@
-import { Mutex } from "async-mutex";
+import { Mutex, MutexInterface, withTimeout } from "async-mutex";
 
 const locks = new Map<string, Lock>();
 
 export class Lock {
   private pendingLocks: number;
-  private readonly mutex: Mutex;
+  private readonly mutex: MutexInterface;
+  private readonly MUTEX_TIMEOUT = 60 * 1000; // 1 minute
 
   constructor() {
     this.pendingLocks = 0;
-    this.mutex = new Mutex();
+    this.mutex = withTimeout(
+      new Mutex(),
+      this.MUTEX_TIMEOUT,
+      new Error("Failed to acquire lock")
+    );
   }
 
   async acquire() {
