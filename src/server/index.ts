@@ -5,6 +5,7 @@ import { httpLogger, serverLogger as logger } from "@/logger";
 import { verifySignature } from "@/utils/gh-token";
 import { version } from "../../package.json";
 import { client } from "@/bot";
+import { acquireLock, releaseLock } from "@/utils/server-locks";
 
 const initializeServer = () => {
   const app = express();
@@ -38,6 +39,11 @@ const initializeServer = () => {
         }
       }
 
+      // Lock request
+      logger.info(`acquiring lock with id ${req.body.repository.full_name}${req.body.pull_request.number}`);
+      await acquireLock(`${req.body.repository.full_name}${req.body.pull_request.number}`);
+      logger.info(`lock acquired for id ${req.body.repository.full_name}${req.body.pull_request.number}`);
+
       // Handle webhook
       const failedMessages = await handleWebhook(req.body);
       if (failedMessages.length === 0) {
@@ -55,6 +61,9 @@ const initializeServer = () => {
       logger.info("failed to handle webhook");
       logger.warn(error);
       return res.status(StatusCodes.BAD_REQUEST).send();
+    } finally {
+      releaseLock(`${req.body.repository.full_name}${req.body.pull_request.number}`);
+      logger.info(`lock released for id ${req.body.repository.full_name}${req.body.pull_request.number}`);
     }
   });
 
