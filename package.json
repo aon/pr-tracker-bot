@@ -1,6 +1,6 @@
 {
   "name": "pr-tracker-discord-bot",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "index.js",
   "scripts": {
     "start": "npm run deploy-node && TS_NODE_BASEURL=./build node -r tsconfig-paths/register build/src/index.js",
